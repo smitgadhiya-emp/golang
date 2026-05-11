@@ -1,134 +1,97 @@
 package entity
 
 import (
-	"database/sql"
+	"crypto/rand"
+	"encoding/hex"
+	"errors"
 	"log"
+	"time"
+
+	"golang.org/x/crypto/bcrypt"
+	"gorm.io/gorm"
 )
 
-func MigrateUserTable(db *sql.DB) {
-	createUsersTable := `
-	CREATE TABLE IF NOT EXISTS users (
-		id TEXT PRIMARY KEY,
-		userName TEXT NOT NULL,
-		password TEXT NOT NULL,
-		email TEXT NOT NULL UNIQUE,
-		city TEXT NOT NULL,
-		pincode TEXT NOT NULL,
-		role TEXT NOT NULL,
-		created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-	);`
+type User struct {
+	ID        string    `gorm:"column:id;primaryKey" json:"id"`
+	UserName  string    `gorm:"column:userName;not null" json:"userName"`
+	Password  string    `gorm:"column:password;not null" json:"-"`
+	Email     string    `gorm:"column:email;unique;not null" json:"email"`
+	City      string    `gorm:"column:city;not null" json:"city"`
+	Pincode   int       `gorm:"column:pincode;not null" json:"pincode"`
+	Role      string    `gorm:"column:role;not null" json:"role"`
+	CreatedAt time.Time `gorm:"column:created_at" json:"createdAt"`
+}
 
-	if _, err := db.Exec(createUsersTable); err != nil {
+func (User) TableName() string {
+	return "users"
+}
+
+func (user *User) BeforeCreate(tx *gorm.DB) error {
+	if user.ID != "" {
+		return nil
+	}
+
+	id, err := generateID()
+	if err != nil {
+		return err
+	}
+
+	user.ID = id
+	return nil
+}
+
+func MigrateUserTable(db *gorm.DB) {
+	if err := db.AutoMigrate(&User{}); err != nil {
 		log.Fatal(err)
 	}
 
-	ensureUserIDIsGeneratedText(db)
 	seedDefaultUser(db)
 }
 
-func ensureUserIDIsGeneratedText(db *sql.DB) {
-	var idType string
-	err := db.QueryRow(`
-		SELECT type
-		FROM pragma_table_info('users')
-		WHERE name = 'id';
-	`).Scan(&idType)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	if idType == "TEXT" {
-		return
-	}
-
-	tx, err := db.Begin()
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer tx.Rollback()
-
-	if _, err = tx.Exec(`
-		CREATE TABLE users_new (
-			id TEXT PRIMARY KEY,
-			userName TEXT NOT NULL,
-			password TEXT NOT NULL,
-			email TEXT NOT NULL UNIQUE,
-			city TEXT NOT NULL,
-			pincode TEXT NOT NULL,
-			role TEXT NOT NULL,
-			created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-		);
-	`); err != nil {
-		log.Fatal(err)
-	}
-
-	if _, err = tx.Exec(`
-		INSERT INTO users_new (
-			id,
-			userName,
-			password,
-			email,
-			city,
-			pincode,
-			role,
-			created_at
-		)
-		SELECT
-			lower(hex(randomblob(16))),
-			userName,
-			password,
-			email,
-			city,
-			pincode,
-			role,
-			created_at
-		FROM users;
-	`); err != nil {
-		log.Fatal(err)
-	}
-
-	if _, err = tx.Exec(`DROP TABLE users;`); err != nil {
-		log.Fatal(err)
-	}
-
-	if _, err = tx.Exec(`ALTER TABLE users_new RENAME TO users;`); err != nil {
-		log.Fatal(err)
-	}
-
-	if err = tx.Commit(); err != nil {
-		log.Fatal(err)
-	}
-}
-
-func seedDefaultUser(db *sql.DB) {
-	insertDefaultUser := `
-	INSERT INTO users (
-		id,
-		userName,
-		password,
-		email,
-		city,
-		pincode,
-		role
-	)
-	SELECT lower(hex(randomblob(16))), ?, ?, ?, ?, ?, ?
-	WHERE NOT EXISTS (
-		SELECT 1 FROM users WHERE email = ?
-	);`
-
+func seedDefaultUser(db *gorm.DB) {
 	defaultEmail := "admin@example.com"
-	if _, err := db.Exec(
-		insertDefaultUser,
-		"admin",
-		"admin123",
-		defaultEmail,
-		"Mumbai",
-		"400001",
-		"admin",
-		defaultEmail,
-	); err != nil {
+
+	var user User
+	err := db.Where(&User{Email: defaultEmail}).First(&user).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		hashedPassword, err := bcrypt.GenerateFromPassword([]byte("admin123"), bcrypt.DefaultCost)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		user = User{
+			UserName: "admin",
+			Password: string(hashedPassword),
+			Email:    defaultEmail,
+			City:     "Mumbai",
+			Pincode:  400001,
+			Role:     "admin",
+		}
+
+		if err := db.Create(&user).Error; err != nil {
+			log.Fatal(err)
+		}
+	} else if err != nil {
 		log.Fatal(err)
+	} else if user.Password == "admin123" {
+		hashedPassword, err := bcrypt.GenerateFromPassword([]byte("admin123"), bcrypt.DefaultCost)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		if err := db.Model(&user).Update("password", string(hashedPassword)).Error; err != nil {
+			log.Fatal(err)
+		}
 	}
 
 	log.Println("\n ========================= \n Default user ensured: \n email: admin@example.com \n Password: admin123 \n ========================= \n")
+}
+
+func generateID() (string, error) {
+	bytes := make([]byte, 16)
+	if _, err := rand.Read(bytes); err != nil {
+		return "", err
+	}
+
+	return hex.EncodeToString(bytes), nil
 }

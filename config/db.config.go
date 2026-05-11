@@ -1,22 +1,18 @@
 package config
 
 import (
-	"database/sql"
 	"gin-project/entity"
 	"log"
 
-	_ "github.com/mattn/go-sqlite3"
+	"gorm.io/driver/sqlite"
+	"gorm.io/gorm"
 )
 
-var DB *sql.DB
+var DB *gorm.DB
 
 func ConnectDB() {
-	db, err := sql.Open("sqlite3", "./db/app.db")
+	db, err := gorm.Open(sqlite.Open("./db/app.db"), &gorm.Config{})
 	if err != nil {
-		log.Fatal(err)
-	}
-
-	if err := db.Ping(); err != nil {
 		log.Fatal(err)
 	}
 
