@@ -9,14 +9,14 @@ type SignupPayload struct {
 	Role     string `json:"role"`
 }
 
-type LoginPayload struct {
-	Email    string `json:"email"`
-	Password string `json:"password"`
-}
-
 type SignupResponse struct {
 	ID    string `json:"id"`
 	Token string `json:"token"`
+}
+
+type LoginPayload struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
 }
 
 type LoginResponse struct {
@@ -24,4 +24,13 @@ type LoginResponse struct {
 	UserID string `json:"userId"`
 	Email  string `json:"email"`
 	Role   string `json:"role"`
+}
+
+type ChangePasswordPayload struct {
+	OldPassword string `json:"oldPassword"`
+	NewPassword string `json:"newPassword"`
+}
+
+type ChangePasswordResponse struct {
+	Message string `json:"message"`
 }

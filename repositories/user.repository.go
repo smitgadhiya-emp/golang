@@ -32,3 +32,17 @@ func GetUserByEmail(email string) (*entity.User, error) {
 
 	return &user, nil
 }
+
+func GetUserByID(userID string) (*entity.User, error) {
+	var user entity.User
+
+	if err := config.DB.Where("id = ?", userID).First(&user).Error; err != nil {
+		return nil, err
+	}
+
+	return &user, nil
+}
+
+func UpdateUserPassword(userID string, password string) error {
+	return config.DB.Model(&entity.User{}).Where("id = ?", userID).Update("password", password).Error
+}

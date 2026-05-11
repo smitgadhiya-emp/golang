@@ -39,7 +39,26 @@ func ValidatePassword(hasedPassword string, password string) bool {
 	}
 }
 
-func ValidateJWT(tokenString string) (*jwt.Token, error) {
+func ValidateJWT(tokenString string) bool {
+	token, err := parseJWT(tokenString)
+	return err == nil && token.Valid
+}
+
+func GetJWTClaims(tokenString string) (jwt.MapClaims, error) {
+	token, err := parseJWT(tokenString)
+	if err != nil || !token.Valid {
+		return nil, jwt.ErrSignatureInvalid
+	}
+
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if !ok {
+		return nil, jwt.ErrInvalidKey
+	}
+
+	return claims, nil
+}
+
+func parseJWT(tokenString string) (*jwt.Token, error) {
 	secret := os.Getenv("JWT_SECRET")
 	if secret == "" {
 		secret = "dev-secret-change-me"
@@ -51,5 +70,4 @@ func ValidateJWT(tokenString string) (*jwt.Token, error) {
 		}
 		return []byte(secret), nil
 	})
-
 }

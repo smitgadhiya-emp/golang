@@ -5,7 +5,6 @@ import (
 	"gin-project/dto"
 	"gin-project/helper"
 	"gin-project/repositories"
-
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -66,4 +65,28 @@ func Login(data dto.LoginPayload) (*dto.LoginResponse, error) {
 		Role:   getUser.Role,
 	}, nil
 
+}
+
+func ChangePassword(userID string, data dto.ChangePasswordPayload) (*dto.ChangePasswordResponse, error) {
+	user, err := repositories.GetUserByID(userID)
+	if err != nil {
+		return nil, fmt.Errorf("user not found")
+	}
+
+	if !helper.ValidatePassword(user.Password, data.OldPassword) {
+		return nil, fmt.Errorf("old password is incorrect")
+	}
+
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(data.NewPassword), bcrypt.DefaultCost)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := repositories.UpdateUserPassword(userID, string(hashedPassword)); err != nil {
+		return nil, err
+	}
+
+	return &dto.ChangePasswordResponse{
+		Message: "Password changed successfully",
+	}, nil
 }

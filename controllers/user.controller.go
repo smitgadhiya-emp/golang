@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"gin-project/dto"
 	"gin-project/helper"
 	"gin-project/services"
@@ -45,4 +46,29 @@ func Login(c *gin.Context) {
 	}
 
 	helper.SucessResponse(c, http.StatusOK, "Login successful", res)
+}
+
+func ChangePassword(c *gin.Context) {
+
+	var req dto.ChangePasswordPayload
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		helper.ErrorResponse(c, http.StatusBadRequest, "Invalid request data", err)
+		return
+	}
+
+	userID := c.GetString("userID")
+	if userID == "" {
+		helper.ErrorResponse(c, http.StatusUnauthorized, "Unauthorized", fmt.Errorf("missing user id"))
+		return
+	}
+
+	res, err := services.ChangePassword(userID, req)
+	if err != nil {
+		helper.ErrorResponse(c, http.StatusBadRequest, "Failed to change password", err)
+		return
+	}
+
+	helper.SucessResponse(c, http.StatusOK, "Password changed successfully", res)
+
 }
