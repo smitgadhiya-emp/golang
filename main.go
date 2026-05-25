@@ -15,8 +15,7 @@ func main() {
 
 	r.Use(cors.New(cors.Config{
 		AllowOrigins: []string{
-			"http://localhost:3000",
-			"http://localhost:3001",
+			env.Getenv("CORS_ALLOWED_ORIGINS"),
 		},
 		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
@@ -42,7 +41,7 @@ func main() {
 
 	// r.Use("/api", routes.Routes)
 
-	if err := r.Run(":8080"); err != nil {
+	if err := r.Run(":" + env.Getenv("PORT")); err != nil {
 		log.Fatal(err)
 	}
 }
