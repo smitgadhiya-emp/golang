@@ -16,6 +16,7 @@ func Singup(c *gin.Context) {
 
 	if err := c.ShouldBindJSON(&req); err != nil {
 		helper.ErrorResponse(c, http.StatusBadRequest, "Invalid request data", err)
+		return
 	}
 
 	res, err := services.SignUpService(req)

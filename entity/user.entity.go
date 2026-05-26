@@ -19,6 +19,8 @@ type User struct {
 	City      string    `gorm:"column:city;not null" json:"city"`
 	Pincode   int       `gorm:"column:pincode;not null" json:"pincode"`
 	Role      string    `gorm:"column:role;not null" json:"role"`
+	Provider  string    `gorm:"column:provider;not null;default:local" json:"provider"`
+	GoogleID  string    `gorm:"column:google_id;uniqueIndex" json:"-"`
 	CreatedAt time.Time `gorm:"column:created_at" json:"createdAt"`
 }
 
@@ -66,6 +68,7 @@ func seedDefaultUser(db *gorm.DB) {
 			City:     "Mumbai",
 			Pincode:  400001,
 			Role:     "admin",
+			Provider: "local",
 		}
 
 		if err := db.Create(&user).Error; err != nil {
