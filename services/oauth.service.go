@@ -26,11 +26,11 @@ func LoginOrRegisterWithGoogle(info *config.GoogleUserInfo) (*dto.LoginResponse,
 
 	existing, err := repositories.GetUserByEmail(info.Email)
 	if err == nil {
-		if existing.GoogleID == "" {
+		if existing.GoogleID == nil || *existing.GoogleID == "" {
 			if linkErr := repositories.LinkGoogleAccount(existing.ID, info.ID); linkErr != nil {
 				return nil, linkErr
 			}
-			existing.GoogleID = info.ID
+			existing.GoogleID = &info.ID
 			existing.Provider = "google"
 		}
 		return issueLoginResponse(existing)

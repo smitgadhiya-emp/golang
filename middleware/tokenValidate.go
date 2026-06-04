@@ -40,4 +40,7 @@ func ValidateToken(c *gin.Context) {
 	}
 
 	c.Set("userID", userID)
+	if role, ok := claims["role"].(string); ok {
+		c.Set("role", role)
+	}
 }

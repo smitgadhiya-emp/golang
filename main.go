@@ -20,7 +20,7 @@ func envOrDefault(key, fallback string) string {
 }
 
 func corsOrigins() []string {
-	raw := envOrDefault("CORS_ALLOWED_ORIGINS", "http://localhost:3000")
+	raw := envOrDefault("CORS_ALLOWED_ORIGINS", "http://localhost:8081")
 	parts := strings.Split(raw, ",")
 	origins := make([]string, 0, len(parts))
 	for _, o := range parts {
@@ -29,7 +29,7 @@ func corsOrigins() []string {
 		}
 	}
 	if len(origins) == 0 {
-		return []string{"http://localhost:3000"}
+		return []string{"http://localhost:8081"}
 	}
 	return origins
 }
