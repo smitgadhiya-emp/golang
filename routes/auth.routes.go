@@ -18,6 +18,9 @@ func authRoutes(r *gin.RouterGroup) {
 	route.POST("/send-otp", controllers.SendOTP)
 	route.POST("/verify-otp", controllers.VerifyOTP)
 
+	route.POST("/email/send-otp", controllers.SendOTP)
+	route.POST("/email/verify-otp", controllers.VerifyOTP)
+
 	route.GET("/oauth/google", controllers.GoogleOAuthStart)
 	route.GET("/oauth/google/callback", controllers.GoogleOAuthCallback)
 

@@ -52,6 +52,9 @@ func main() {
 	// db connection
 	config.ConnectDB()
 
+	// redis connection
+	config.InitRedis()
+
 	// rabbitmq connection
 	config.InitRabbitMQ()
 	defer config.CloseRabbitMQ()

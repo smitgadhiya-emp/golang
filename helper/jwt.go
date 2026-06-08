@@ -1,7 +1,6 @@
 package helper
 
 import (
-	"fmt"
 	"os"
 	"time"
 
@@ -29,7 +28,6 @@ func GenerateJWT(userID string, email string, role string) (string, error) {
 
 func ValidatePassword(hasedPassword string, password string) bool {
 
-	fmt.Println("hasedPassword", hasedPassword)
 	valid := bcrypt.CompareHashAndPassword([]byte(hasedPassword), []byte(password))
 
 	if valid != nil {
