@@ -6,7 +6,9 @@ import (
 	"gin-project/dto"
 	"gin-project/entity"
 	"gin-project/helper"
+	"gin-project/queue"
 	"gin-project/repositories"
+	"log"
 
 	"golang.org/x/crypto/bcrypt"
 
@@ -29,6 +31,13 @@ func SignUpService(data dto.SignupPayload) (*dto.SignupResponse, error) {
 	token, err := helper.GenerateJWT(userID, data.Email, data.Role)
 	if err != nil {
 		return nil, err
+	}
+
+	// Enqueue the welcome email; the worker sends it asynchronously so signup
+	// stays fast and isn't blocked on SMTP. A publish failure must not fail
+	// registration, so we only log it.
+	if err := queue.PublishWelcomeEmail(data.Email, data.UserName); err != nil {
+		log.Printf("failed to enqueue welcome email for %s: %v", data.Email, err)
 	}
 
 	return &dto.SignupResponse{

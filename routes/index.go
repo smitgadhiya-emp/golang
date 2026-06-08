@@ -9,6 +9,7 @@ func Routes(r *gin.Engine) {
 	route := r.Group("/api/v1")
 
 	authRoutes(route)
+	emailRoutes(route)
 	userRoutes(route)
 
 }

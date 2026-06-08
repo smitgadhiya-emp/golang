@@ -2,7 +2,9 @@ package main
 
 import (
 	"gin-project/config"
+	"gin-project/queue"
 	"gin-project/routes"
+	"gin-project/workers"
 	"log"
 	"os"
 	"strings"
@@ -49,6 +51,16 @@ func main() {
 
 	// db connection
 	config.ConnectDB()
+
+	// rabbitmq connection
+	config.InitRabbitMQ()
+	defer config.CloseRabbitMQ()
+
+	// declare queues and start background workers (consumers)
+	if err := queue.DeclareQueues(); err != nil {
+		log.Fatalf("Failed to declare queues: %v", err)
+	}
+	workers.StartAll()
 
 	r.GET("/", func(c *gin.Context) {
 		c.JSON(200, gin.H{
