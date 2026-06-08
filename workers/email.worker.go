@@ -63,6 +63,8 @@ func handleEmailJob(job queue.EmailJob) error {
 		return helper.SendWelcomeEmail(job.Email, job.Name)
 	case queue.OTPEmail:
 		return helper.SendOTPEmail(job.Email, job.Name, job.OTP, job.ExpiryMinutes)
+	case queue.ResetPasswordEmail:
+		return helper.SendResetPasswordEmail(job.Email, job.Name, job.ResetLink, job.ExpiryMinutes)
 	default:
 		log.Printf("[email-worker] unknown job type %q, ignoring", job.Type)
 		return nil

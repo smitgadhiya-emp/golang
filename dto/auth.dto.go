@@ -45,3 +45,29 @@ type ChangePasswordPayload struct {
 type ChangePasswordResponse struct {
 	Message string `json:"message"`
 }
+
+type ForgotPasswordPayload struct {
+	Email string `json:"email"`
+}
+
+type ForgotPasswordResponse struct {
+	Message string `json:"message"`
+}
+
+type VerifyResetTokenPayload struct {
+	Token string `json:"token"`
+}
+
+type VerifyResetTokenResponse struct {
+	Valid bool   `json:"valid"`
+	Email string `json:"email"`
+}
+
+type ResetPasswordPayload struct {
+	Token       string `json:"token"`
+	NewPassword string `json:"newPassword"`
+}
+
+type ResetPasswordResponse struct {
+	Message string `json:"message"`
+}

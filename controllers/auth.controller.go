@@ -131,3 +131,54 @@ func ChangePassword(c *gin.Context) {
 	helper.SucessResponse(c, http.StatusOK, "Password changed successfully", res)
 
 }
+
+func ForgotPassword(c *gin.Context) {
+	var req dto.ForgotPasswordPayload
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		helper.ErrorResponse(c, http.StatusBadRequest, "Invalid request data", err)
+		return
+	}
+
+	res, err := services.ForgotPassword(req)
+	if err != nil {
+		helper.ErrorResponse(c, http.StatusBadRequest, "Failed to send reset link", err)
+		return
+	}
+
+	helper.SucessResponse(c, http.StatusOK, "Reset link sent successfully", res)
+}
+
+func VerifyResetToken(c *gin.Context) {
+	var req dto.VerifyResetTokenPayload
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		helper.ErrorResponse(c, http.StatusBadRequest, "Invalid request data", err)
+		return
+	}
+
+	res, err := services.VerifyResetToken(req)
+	if err != nil {
+		helper.ErrorResponse(c, http.StatusBadRequest, "Invalid or expired reset token", err)
+		return
+	}
+
+	helper.SucessResponse(c, http.StatusOK, "Reset token is valid", res)
+}
+
+func ResetPassword(c *gin.Context) {
+	var req dto.ResetPasswordPayload
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		helper.ErrorResponse(c, http.StatusBadRequest, "Invalid request data", err)
+		return
+	}
+
+	res, err := services.ResetPassword(req)
+	if err != nil {
+		helper.ErrorResponse(c, http.StatusBadRequest, "Failed to reset password", err)
+		return
+	}
+
+	helper.SucessResponse(c, http.StatusOK, "Password reset successfully", res)
+}

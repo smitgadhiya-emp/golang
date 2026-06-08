@@ -14,8 +14,9 @@ import (
 type EmailJobType string
 
 const (
-	WelcomeEmail EmailJobType = "welcome"
-	OTPEmail     EmailJobType = "otp"
+	WelcomeEmail       EmailJobType = "welcome"
+	OTPEmail           EmailJobType = "otp"
+	ResetPasswordEmail EmailJobType = "reset_password"
 )
 
 // EmailJob is the JSON message body published to the email queue.
@@ -24,6 +25,7 @@ type EmailJob struct {
 	Email         string       `json:"email"`
 	Name          string       `json:"name"`
 	OTP           string       `json:"otp,omitempty"`
+	ResetLink     string       `json:"resetLink,omitempty"`
 	ExpiryMinutes int          `json:"expiryMinutes,omitempty"`
 }
 
@@ -68,6 +70,17 @@ func PublishOTPEmail(email, name, otp string, expiryMinutes int) error {
 		Email:         email,
 		Name:          name,
 		OTP:           otp,
+		ExpiryMinutes: expiryMinutes,
+	})
+}
+
+// PublishResetPasswordEmail enqueues a password-reset email job.
+func PublishResetPasswordEmail(email, name, resetLink string, expiryMinutes int) error {
+	return publish(EmailQueue, EmailJob{
+		Type:          ResetPasswordEmail,
+		Email:         email,
+		Name:          name,
+		ResetLink:     resetLink,
 		ExpiryMinutes: expiryMinutes,
 	})
 }

@@ -18,11 +18,16 @@ func authRoutes(r *gin.RouterGroup) {
 	route.POST("/send-otp", controllers.SendOTP)
 	route.POST("/verify-otp", controllers.VerifyOTP)
 
-	route.POST("/email/send-otp", controllers.SendOTP)
-	route.POST("/email/verify-otp", controllers.VerifyOTP)
+	// Password change (requires authentication)
+	route.POST("/change-password", middleware.ValidateToken, controllers.ChangePassword)
+	
+	// forgot password
+	route.POST("/forgot-password", controllers.ForgotPassword)
+	route.POST("/forgot-password/verify-token", controllers.VerifyResetToken)
+	route.POST("/forgot-password/reset", controllers.ResetPassword)
 
+	// Google OAuth
+	
 	route.GET("/oauth/google", controllers.GoogleOAuthStart)
 	route.GET("/oauth/google/callback", controllers.GoogleOAuthCallback)
-
-	route.POST("/change-password", middleware.ValidateToken, controllers.ChangePassword)
 }

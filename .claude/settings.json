@@ -9,7 +9,9 @@
       "Bash(git -C /home/empiric/Desktop/smit/golang/ginProject log --oneline -1)",
       "Bash(git -C /home/empiric/Desktop/smit/golang/ginProject status --short)",
       "Bash(git -C /home/empiric/Desktop/smit/native-app log --oneline -1)",
-      "Bash(git -C /home/empiric/Desktop/smit/native-app status --short)"
+      "Bash(git -C /home/empiric/Desktop/smit/native-app status --short)",
+      "Bash(sed -n '120,170p' services/auth.service.go)",
+      "Bash(sed -n '85,120p' controllers/auth.controller.go)"
     ]
   }
 }

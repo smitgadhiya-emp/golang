@@ -41,6 +41,14 @@ type otpEmailData struct {
 	Year          int
 }
 
+type resetPasswordEmailData struct {
+	Name          string
+	ResetLink     string
+	ExpiryMinutes int
+	AppName       string
+	Year          int
+}
+
 // SendWelcomeEmail renders the welcome template and emails it to the user.
 func SendWelcomeEmail(to, name string) error {
 	body, err := templates.Render("welcome.html", welcomeEmailData{
@@ -74,4 +82,25 @@ func SendOTPEmail(to, name, otp string, expiryMinutes int) error {
 	}
 
 	return config.SendMail(to, "Your "+appName()+" verification code", body)
+}
+
+// SendResetPasswordEmail renders the reset-password template and emails the
+// reset link to the user.
+func SendResetPasswordEmail(to, name, resetLink string, expiryMinutes int) error {
+	if expiryMinutes <= 0 {
+		expiryMinutes = 15
+	}
+
+	body, err := templates.Render("reset-password.html", resetPasswordEmailData{
+		Name:          name,
+		ResetLink:     resetLink,
+		ExpiryMinutes: expiryMinutes,
+		AppName:       appName(),
+		Year:          time.Now().Year(),
+	})
+	if err != nil {
+		return err
+	}
+
+	return config.SendMail(to, "Reset your "+appName()+" password", body)
 }
